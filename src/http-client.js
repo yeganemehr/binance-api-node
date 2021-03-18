@@ -1,7 +1,7 @@
 import crypto from 'crypto'
 import zip from 'lodash.zipobject'
+import fetch from 'node-fetch';
 
-import 'isomorphic-fetch'
 
 const BASE = 'https://api.binance.com'
 const FUTURES = 'https://fapi.binance.com'
@@ -111,7 +111,7 @@ const checkParams = (name, payload, requires = []) => {
  * @param {object} headers
  * @returns {object} The api response
  */
-const publicCall = ({ endpoints }) => (path, data, method = 'GET', headers = {}) =>
+const publicCall = ({ endpoints, httpAgent }) => (path, data, method = 'GET', headers = {}) =>
   sendResult(
     fetch(
       `${!path.includes('/fapi') ? endpoints.base : endpoints.futures}${path}${makeQueryString(
@@ -121,6 +121,7 @@ const publicCall = ({ endpoints }) => (path, data, method = 'GET', headers = {})
         method,
         json: true,
         headers,
+        httpAgent,
       },
     ),
   )
@@ -152,7 +153,7 @@ const keyCall = ({ apiKey, pubCall }) => (path, data, method = 'GET') => {
  * @param {object} headers
  * @returns {object} The api response
  */
-const privateCall = ({ apiKey, apiSecret, endpoints, getTime = defaultGetTime, pubCall }) => (
+const privateCall = ({ apiKey, apiSecret, endpoints, getTime = defaultGetTime, pubCall, httpAgent }) => (
   path,
   data = {},
   method = 'GET',
@@ -177,7 +178,6 @@ const privateCall = ({ apiKey, apiSecret, endpoints, getTime = defaultGetTime, p
       .digest('hex')
 
     const newData = noExtra ? data : { ...data, timestamp, signature }
-
     return sendResult(
       fetch(
         `${!path.includes('/fapi') ? endpoints.base : endpoints.futures}${path}${
@@ -187,6 +187,7 @@ const privateCall = ({ apiKey, apiSecret, endpoints, getTime = defaultGetTime, p
           method,
           headers: { 'X-MBX-APIKEY': apiKey },
           json: true,
+          agent: httpAgent,
         },
       ),
     )

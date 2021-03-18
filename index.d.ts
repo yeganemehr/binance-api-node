@@ -1,3 +1,5 @@
+import { Agent } from "http";
+
 // tslint:disable:interface-name
 declare module 'binance-api-node' {
   export default function(options?: {
@@ -7,7 +9,8 @@ declare module 'binance-api-node' {
     httpBase?: string
     httpFutures?: string
     wsBase?: string
-    wsFutures?: string
+    wsFutures?: string,
+    httpAgent?: Agent,
   }): Binance
 
   export enum ErrorCodes {
